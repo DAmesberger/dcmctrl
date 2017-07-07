@@ -1,0 +1,5 @@
+*.vcd
+dsn
+*.bin
+run.bat
+*.rpt

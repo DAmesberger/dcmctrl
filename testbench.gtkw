@@ -1,0 +1,88 @@
+[*]
+[*] GTKWave Analyzer v3.3.65 (w)1999-2015 BSI
+[*] Sun May 21 17:52:06 2017
+[*]
+[dumpfile] "/home/clifford/Work/handicraft/2017/dcmctrl/testbench.vcd"
+[dumpfile_mtime] "Sun May 21 17:51:43 2017"
+[dumpfile_size] 4779534
+[savefile] "/home/clifford/Work/handicraft/2017/dcmctrl/testbench.gtkw"
+[timestart] 0
+[size] 1609 906
+[pos] -1 -1
+*-17.000000 422000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] testbench.
+[sst_width] 225
+[signals_width] 309
+[sst_expanded] 1
+[sst_vpaned_height] 269
+@28
+testbench.clk
+testbench.reset
+@24
+testbench.cycle
+@200
+-
+@28
+testbench.spi_clk
+testbench.spi_miso
+testbench.spi_mosi
+testbench.spi_ss
+@200
+-
+@28
+testbench.motor_left_0
+testbench.motor_right_0
+@29
+testbench.motor_pulse_0
+@200
+-
+@28
+testbench.uut.spi_first_byte
+@24
+testbench.uut.spi_bitcnt[2:0]
+testbench.uut.spi_shiftreg[7:0]
+@200
+-
+@28
+testbench.uut.spi_rstrobe
+@24
+testbench.uut.spi_raddr[6:0]
+testbench.uut.spi_rdata[7:0]
+@200
+-
+@28
+testbench.uut.spi_wstrobe
+@24
+testbench.uut.spi_waddr[6:0]
+testbench.uut.spi_wdata[7:0]
+@200
+-
+@24
+testbench.uut.reg_addr[6:0]
+@28
+testbench.uut.reg_rstrobe
+@24
+testbench.uut.reg_rdata[7:0]
+@28
+testbench.uut.reg_wstrobe
+@24
+testbench.uut.reg_wdata[7:0]
+@200
+-
+@24
+testbench.uut.mc_channel[3:0]
+testbench.uut.mc_state[9:0]
+@200
+-
+@22
+testbench.uut.mc_flags[7:0]
+@24
+testbench.uut.mc_current_position[23:0]
+testbench.uut.mc_target_position[23:0]
+@200
+-
+@22
+testbench.uut.pwm_stage1_channel[3:0]
+testbench.uut.pwm_stage1_count[7:0]
+[pattern_trace] 1
+[pattern_trace] 0
