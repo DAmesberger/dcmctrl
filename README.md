@@ -1,17 +1,17 @@
-# dcmctrl
+
 A simple DC motor controller FPGA core
 --------------------------------------
 
 The controller has a simple SPI interface. Input data is latched on the rising
 edge of serial clock and output data is made available on the falling clock edge
-the clock idle state is high.
+the clock idle state is low.
 
-I.e. it is compatible with SPI mode "CPOL=1, CPHA=1".
+I.e. it is compatible with SPI mode "CPOL=0, CPHA=0".
 
 The protocol is simple: The first byte of a transaction is a 7 bit register
-start address + MSB set for writes, followed by write data on MOSI or read
+start address + MSB set for writes, followed by write data on MOSI and read
 data on MISO. The MISO signal always contains the (old) register data, even
-during a write.
+during a write. The first MISO byte is always zero.
 
 Register File
 -------------
@@ -58,3 +58,17 @@ controller do not conflict with writes via SPI.
 	 0x7f   | channel 1 target_position[7:0]
 	--------+----------------------------------
 
+The flags register bits:
+
+	Bit 0 ...... Got OTW condition
+	Bit 1 ...... Got FAULT condition
+	Bit 2 ...... Got timeout
+	Bit 3 ...... Reserved
+	Bit 4 ...... Reserved
+	Bit 5 ...... Reserved
+	Bit 6 ...... Reserved
+	Bit 7 ...... Reserved
+
+The PWM signal is automatically turned off when the flags
+register for a channel has a nonzero value. The motor controller
+is automatically reset in response to an OTW or FAULT condition.
