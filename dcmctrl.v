@@ -25,7 +25,6 @@ module dcmctrl #(
 	reg [2:0] spi_bitcnt;
 	reg spi_first_byte;
 
-	reg last_spi_ss;
 	reg last_spi_clk;
 
 	reg spi_write;
@@ -43,21 +42,18 @@ module dcmctrl #(
 		spi_wstrobe <= spi_rstrobe && spi_write && !spi_first_byte;
 		spi_xstrobe <= spi_rstrobe;
 		spi_wdata = spi_shiftreg;
-		last_spi_ss <= spi_ss;
 		last_spi_clk <= spi_clk;
 
-		if (reset) begin
+		if (reset || spi_ss) begin
 			/* reset everything */
 			spi_first_byte <= 0;
 			spi_write <= 0;
 			spi_miso <= 0;
-		end else
-		if (last_spi_ss && !spi_ss) begin
+
 			/* new transaction */
 			spi_shiftreg <= 0;
 			spi_bitcnt <= 0;
 			spi_first_byte <= 1;
-			spi_miso <= 0;
 		end else
 		if (!last_spi_clk && spi_clk) begin
 			/* next bit in */
@@ -362,7 +358,7 @@ module top  (
 	input  SLOT4_IO3, //HALL 4
 	input  SLOT4_IO4, //HALL 5
 	input  SLOT4_IO5,  //HALL 6
-	input  SLOT4_IO6, //RESET
+	input  SLOT4_IO6  //RESET
 	//output SLOT4_IO7,
 	//output SLOT4_IO8,	
 	//output SLOT4_IO9
@@ -374,9 +370,9 @@ module top  (
 	wire [7:0] motor_right;
 	wire [7:0] motor_reset;
 
-	reg  [7:0] motor_pulse;
-	reg  [7:0] motor_fault = 0;
-	reg  [7:0] motor_otw = 0;
+	wire  [7:0] motor_pulse;
+	wire  [7:0] motor_fault = 0;
+	wire  [7:0] motor_otw = 0;
 
 	assign SLOT1_IO4 = 1;
 	assign SLOT1_IO5 = 1;
