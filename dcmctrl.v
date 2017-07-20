@@ -99,6 +99,20 @@ module dcmctrl #(
 		reg_rdata <= registers[spi_rstrobe ? spi_raddr : reg_addr];
 	end
 
+`ifdef DCMCTRL_DUMMY
+	// with this define set the core is a simple SPI memory and
+	// the motor ctrl outputs are constant low (for testing)
+	always @(posedge clk) begin
+		reg_wstrobe <= 0;
+		reg_rstrobe <= 0;
+		reg_addr <= 0;
+		reg_rdata <= 0;
+		reg_wdata <= 0;
+		motor_left <= 0;
+		motor_right <= 0;
+		motor_reset <= 0;
+	end
+`else
 	// ---- Motor Controller ----
 
 	(* keep *) reg [9:0] mc_state;
@@ -307,6 +321,7 @@ module dcmctrl #(
 			motor_right[pwm_stage2_channel] <= mc_chan_turn_right[pwm_stage2_channel] && (pwm_stage2_count < pwm_stage2_speed);
 		end
 	end
+`endif
 endmodule
 
 module top  (
