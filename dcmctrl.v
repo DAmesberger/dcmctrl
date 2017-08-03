@@ -1,6 +1,8 @@
+//`define DCMCTRL_DUMMY
 module dcmctrl #(
 	parameter integer N_CHANNELS = 6,
-	parameter integer TIMEOUT_EXP2 = 18
+	parameter integer TIMEOUT_EXP2 = 25, //around 1.4 sec timeout @24MHz, Formula=(2^TIMEOUT_EXP2)/24000000
+	parameter integer RESET_EXP = 18 //around 10ms
 ) (
 	input clk,
 	input reset,
@@ -37,14 +39,23 @@ module dcmctrl #(
 	reg [7:0] spi_rdata;
 	reg [7:0] spi_wdata;
 
+	reg spi_ss_q;
+	reg spi_clk_q;
+	reg spi_mosi_q;
+
+	always @(posedge clk) begin
+		spi_ss_q <= spi_ss;
+		spi_clk_q <= spi_clk;
+		spi_mosi_q <= spi_mosi;
+	end
 	always @(posedge clk) begin
 		spi_rstrobe <= 0;
 		spi_wstrobe <= spi_rstrobe && spi_write && !spi_first_byte;
 		spi_xstrobe <= spi_rstrobe;
 		spi_wdata = spi_shiftreg;
-		last_spi_clk <= spi_clk;
+		last_spi_clk <= spi_clk_q;
 
-		if (reset || spi_ss) begin
+		if (reset || spi_ss_q) begin
 			/* reset everything */
 			spi_first_byte <= 0;
 			spi_write <= 0;
@@ -55,20 +66,20 @@ module dcmctrl #(
 			spi_bitcnt <= 0;
 			spi_first_byte <= 1;
 		end else
-		if (!last_spi_clk && spi_clk) begin
+		if (!last_spi_clk && spi_clk_q) begin
 			/* next bit in */
-			spi_shiftreg <= {spi_shiftreg, spi_mosi};
+			spi_shiftreg <= {spi_shiftreg, spi_mosi_q};
 			spi_bitcnt <= spi_bitcnt + 1;
 			if (spi_bitcnt == 7) begin
 				if (spi_first_byte)
-					{spi_write, spi_raddr} <= {spi_shiftreg, spi_mosi};
+					{spi_write, spi_raddr} <= {spi_shiftreg, spi_mosi_q};
 				else
 					spi_raddr <= spi_raddr + 1;
 				spi_waddr <= spi_raddr;
 				spi_rstrobe <= 1;
 			end
 		end else
-		if (last_spi_clk && !spi_clk) begin
+		if (last_spi_clk && !spi_clk_q) begin
 			/* next bit out */
 			spi_miso <= spi_shiftreg[7];
 		end else
@@ -120,7 +131,7 @@ module dcmctrl #(
 
 	(* keep *) reg [23:0] mc_current_position;
 	(* keep *) reg [23:0] mc_target_position;
-	(* keep *) reg [7:0] mc_flags;
+	(* keep *) reg [7:0] mc_flags [0:N_CHANNELS-1];
 
 	(* keep *) reg [7:0] mc_chan_speed [0:N_CHANNELS-1];
 	(* keep *) reg [N_CHANNELS-1:0] mc_chan_turn_left;
@@ -134,12 +145,14 @@ module dcmctrl #(
 
 	(* keep *) reg [N_CHANNELS-1:0] mc_chan_live;
 	(* keep *) reg [TIMEOUT_EXP2-1:0] mc_timeout;
+	//(* keep *) reg [RESET_EXP-1:0] reset_timeout;
 
 	// "move left" := mc_position_delta < 0
 	// "move right" := mc_position_delta > 0
 	wire [23:0] mc_position_delta = mc_target_position - mc_current_position;
 
 	wire mc_timeout_check = &mc_timeout[TIMEOUT_EXP2-1 -: 3];
+	//wire reset_timeout_check = &reset_timeout[RESET_EXP-1 -: 3];
 
 	always @(posedge clk) begin
 		mc_chan_pulse <= mc_chan_pulse | (motor_pulse & ~mc_chan_last_pulse);
@@ -177,7 +190,12 @@ module dcmctrl #(
 					mc_state <= 2;
 				end
 				2: begin
-					mc_flags <= reg_rdata;
+					if (mc_flags[mc_channel] != 0 && reg_rdata == 0) begin
+						mc_chan_live[mc_channel] <= 0;
+						mc_timeout <= 0;
+						//motor_reset[mc_channel] <= ~0; //TODO - pulse						
+					end
+					mc_flags[mc_channel] <= reg_rdata;
 					reg_addr <= reg_addr + 1;
 					reg_rstrobe <= 1;
 					mc_state <= 3;
@@ -226,28 +244,27 @@ module dcmctrl #(
 					if (mc_position_delta == 0) begin
 						mc_chan_live[mc_channel] <= 1;
 					end
-					mc_chan_turn_left[mc_channel] <= !mc_flags && mc_position_delta[23];
-					mc_chan_turn_right[mc_channel] <= !mc_flags && !mc_position_delta[23] && mc_position_delta[22:0];
+					mc_chan_turn_left[mc_channel] <= !mc_flags[mc_channel] && mc_position_delta[23];
+					mc_chan_turn_right[mc_channel] <= !mc_flags[mc_channel] && !mc_position_delta[23] && mc_position_delta[22:0];
 					mc_state <= 101;
 				end
 				101: begin
 					motor_reset[mc_channel] <= 0;
-					/*
-					if (mc_timeout_check && !mc_chan_live[mc_channel] && !mc_flags[2:0]) begin
-						mc_flags[2] <= 1;
+					if (mc_timeout_check && !mc_chan_live[mc_channel] && !mc_flags[mc_channel][2:0]) begin
+						mc_flags[mc_channel][2] <= 1;
 						mc_write_flags <= 1;
+						mc_timeout <= 0;
 					end
-					if (motor_fault[mc_channel] && !mc_flags[1]) begin
+					if (motor_fault[mc_channel] && !mc_flags[mc_channel][1]) begin
 						motor_reset[mc_channel] <= 1;
-						mc_flags[1] <= 1;
+						mc_flags[mc_channel][1] <= 1;
 						mc_write_flags <= 1;
 					end
-					if (motor_otw[mc_channel] && !mc_flags[0]) begin
+					if (motor_otw[mc_channel] && !mc_flags[mc_channel][0]) begin
 						motor_reset[mc_channel] <= 1;
-						mc_flags[0] <= 1;
+						mc_flags[mc_channel][0] <= 1;
 						mc_write_flags <= 1;
 					end
-					*/
 					mc_state <= 1000;
 				end
 
@@ -267,7 +284,7 @@ module dcmctrl #(
 
 					reg_addr <= mc_channel * 4;
 					reg_wstrobe <= mc_write_flags;
-					reg_wdata <= mc_flags;
+					reg_wdata <= mc_flags[mc_channel];
 					mc_state <= 1001;
 				end
 				1001: begin
