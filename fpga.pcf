@@ -28,7 +28,7 @@ set_io SLOT2_IO5 C4
 set_io SLOT2_IO6 C3
 set_io SLOT2_IO7 C6
 set_io SLOT2_IO8 C12
-#set_io SLOT2_IO9 C11
+set_io SLOT2_IO9 C11
 
 set_io SLOT3_IO0 L8 
 set_io SLOT3_IO1 M8 
@@ -39,7 +39,7 @@ set_io SLOT3_IO5 J12
 set_io SLOT3_IO6 H11
 set_io SLOT3_IO7 F11
 set_io SLOT3_IO8 E11
-#set_io SLOT3_IO9 E12
+set_io SLOT3_IO9 E12
 
 set_io SLOT4_IO0 D5
 set_io SLOT4_IO1 D3

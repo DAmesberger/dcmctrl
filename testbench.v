@@ -45,6 +45,7 @@ module testbench;
 		begin
 			spi_ss <= 0;
 			#50;
+			$display("spi begin");
 		end
 	endtask
 
@@ -61,6 +62,7 @@ module testbench;
 				spidata <= {spidata, spi_miso};
 				#50;
 			end
+			$display("spi read: %02x", spidata);
 		end
 	endtask
 
@@ -68,6 +70,7 @@ module testbench;
 		begin
 			spi_ss <= 1;
 			#100;
+			$display("spi end\n\n");
 		end
 	endtask
 
@@ -110,10 +113,22 @@ module testbench;
 		spi_xfer_byte(100); // target speed
 		spi_xfer_byte(0); // target position [23:16]
 		spi_xfer_byte(0); // target position [15:8]
-		spi_xfer_byte(20); // target position [7:0]
+		spi_xfer_byte(200); // target position [7:0]
 		spi_xfer_end;
 
-		#500000;
+		#10000;
+		
+		repeat (100) begin
+			spi_xfer_begin;
+			spi_xfer_byte(0 | 0);
+			spi_xfer_byte(0); // flags
+			spi_xfer_byte(0); // current position [23:16]
+			spi_xfer_byte(0); // current position [15:8]
+			spi_xfer_byte(0); // current position [7:0]
+			spi_xfer_end;
+			#10000;
+		end
+		
 		$finish;
 	end
 
