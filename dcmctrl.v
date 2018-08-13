@@ -219,6 +219,10 @@ module dcmctrl #(
 					mc_state <= 6;
 				end
 				6: begin
+					//`ifndef SYNTHESIS
+					// if (mc_channel == 0)
+					//	$display("curr pos = %d", mc_current_position);
+					//`endif
 					mc_chan_speed[mc_channel] <= reg_rdata;
 					reg_addr <= reg_addr + 1;
 					reg_rstrobe <= 1;

@@ -118,7 +118,8 @@ module testbench;
 
 		#10000;
 		
-		repeat (100) begin
+		repeat (500) begin
+			$display("T = %d", $time);
 			spi_xfer_begin;
 			spi_xfer_byte(0 | 0);
 			spi_xfer_byte(0); // flags
@@ -126,7 +127,7 @@ module testbench;
 			spi_xfer_byte(0); // current position [15:8]
 			spi_xfer_byte(0); // current position [7:0]
 			spi_xfer_end;
-			#10000;
+			#991;
 		end
 		
 		$finish;
