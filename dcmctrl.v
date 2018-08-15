@@ -96,10 +96,13 @@ module dcmctrl #(
 	(* keep *) reg reg_wstrobe;
 	(* keep *) reg reg_rstrobe;
 	(* keep *) reg [6:0] reg_addr;
-	(* keep *) reg [7:0] reg_rdata;
 	(* keep *) reg [7:0] reg_wdata;
 
 	wire reg_flowctrl = spi_wstrobe || spi_rstrobe;
+	reg reg_flowctrl_q;
+
+	(* keep *) wire [7:0] reg_rdata = reg_flowctrl_q ? reg_rdata_q : spi_rdata;
+	(* keep *) reg  [7:0] reg_rdata_q;
 
 	always @(posedge clk) begin
 		if (spi_wstrobe || reg_wstrobe) begin
@@ -107,7 +110,9 @@ module dcmctrl #(
 		end
 
 		spi_rdata <= registers[spi_rstrobe ? spi_raddr : reg_addr];
-		reg_rdata <= registers[spi_rstrobe ? spi_raddr : reg_addr];
+
+		reg_flowctrl_q <= reg_flowctrl;
+		reg_rdata_q <= reg_rdata;
 	end
 
 `ifdef DCMCTRL_DUMMY
