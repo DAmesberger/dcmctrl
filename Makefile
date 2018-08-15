@@ -4,6 +4,10 @@ DEVICE = hx1k
 
 all: $(PROJ).rpt $(PROJ).bin
 
+test:
+	iverilog -o testbench -s testbench testbench.v dcmctrl.v
+	vvp -N testbench
+
 %.blif: %.v
 	yosys -p 'synth_ice40 -top top -blif $@' $<
 
