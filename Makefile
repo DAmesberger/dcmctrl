@@ -29,5 +29,6 @@ sudo-prog: $(PROJ).bin
 
 clean:
 	rm -f $(PROJ).blif $(PROJ).asc $(PROJ).bin
+	rm -f testbench testbench.vcd
 
-.PHONY: all prog clean
+.PHONY: all test prog sudo-prog clean
