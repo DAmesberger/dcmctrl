@@ -12,13 +12,13 @@ module testbench;
 	reg spi_mosi;
 	wire spi_miso;
 
-	wire [7:0] motor_left;
-	wire [7:0] motor_right;
-	wire [7:0] motor_reset;
+	wire [5:0] motor_left;
+	wire [5:0] motor_right;
+	wire [5:0] motor_reset;
 
-	reg  [7:0] motor_pulse;
-	reg  [7:0] motor_fault;
-	reg  [7:0] motor_otw;
+	reg  [5:0] motor_pulse;
+	reg  [5:0] motor_fault;
+	reg  [5:0] motor_otw;
 
 	wire motor_left_0 = motor_left[0];
 	wire motor_right_0 = motor_right[0];
