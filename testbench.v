@@ -1,4 +1,6 @@
 module testbench;
+	localparam VERBOSE_SPI = 0;
+
 	reg clk = 1;
 	always #5 clk = ~clk;
 
@@ -45,7 +47,8 @@ module testbench;
 		begin
 			spi_ss <= 0;
 			#50;
-			$display("spi begin");
+			if (VERBOSE_SPI)
+				$display("spi begin");
 		end
 	endtask
 
@@ -62,7 +65,8 @@ module testbench;
 				spidata <= {spidata, spi_miso};
 				#50;
 			end
-			$display("spi read: %02x", spidata);
+			if (VERBOSE_SPI)
+				$display("spi read: %02x", spidata);
 		end
 	endtask
 
@@ -70,7 +74,8 @@ module testbench;
 		begin
 			spi_ss <= 1;
 			#100;
-			$display("spi end\n\n");
+			if (VERBOSE_SPI)
+				$display("spi end\n\n");
 		end
 	endtask
 
@@ -119,7 +124,8 @@ module testbench;
 		#10000;
 		
 		repeat (500) begin
-			$display("T = %d", $time);
+			if (VERBOSE_SPI)
+				$display("T = %d", $time);
 			spi_xfer_begin;
 			spi_xfer_byte(0 | 0);
 			spi_xfer_byte(0); // flags
