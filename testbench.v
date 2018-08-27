@@ -81,6 +81,8 @@ module testbench;
 
 	integer i;
 
+	reg [15:0] pos = 500;
+
 	initial begin
 		$dumpfile("testbench.vcd");
 		$dumpvars(0, testbench);
@@ -111,31 +113,47 @@ module testbench;
 		repeat (10) @(posedge clk);
 		reset <= 0;
 
-		// Set target speed and position for channel 0
+		repeat (7) begin
 
-		spi_xfer_begin;
-		spi_xfer_byte(128 | 64);
-		spi_xfer_byte(100); // target speed
-		spi_xfer_byte(0); // target position [23:16]
-		spi_xfer_byte(0); // target position [15:8]
-		spi_xfer_byte(200); // target position [7:0]
-		spi_xfer_end;
-
-		#10000;
-		
-		repeat (500) begin
-			if (VERBOSE_SPI)
-				$display("T = %d", $time);
+			// Clear flags for channel 0
 			spi_xfer_begin;
-			spi_xfer_byte(0 | 0);
+			spi_xfer_byte(128 | 0);
 			spi_xfer_byte(0); // flags
-			spi_xfer_byte(0); // current position [23:16]
-			spi_xfer_byte(0); // current position [15:8]
-			spi_xfer_byte(0); // current position [7:0]
 			spi_xfer_end;
-			#991;
+			#555;
+
+			// Set  position for channel 0
+			spi_xfer_begin;
+			spi_xfer_byte(128 | 64 | 0);
+			spi_xfer_byte(250); // speed
+			spi_xfer_byte(0); // target position [23:16]
+			spi_xfer_byte(pos[15:8]); // target position [15:8]
+			spi_xfer_byte(pos[7:0]); // target position [7:0]
+			spi_xfer_end;
+			#555;
+
+			repeat (500) begin
+				if (VERBOSE_SPI)
+					$display("T = %d", $time);
+				spi_xfer_begin;
+				spi_xfer_byte(0 | 0);
+				spi_xfer_byte(0); // flags
+				spi_xfer_byte(0); // current position [23:16]
+				spi_xfer_byte(0); // current position [15:8]
+				spi_xfer_byte(0); // current position [7:0]
+				spi_xfer_end;
+				#991;
+			end
+
+			// Set  speed for channel 0
+			spi_xfer_begin;
+			spi_xfer_byte(128 | 64 | 0);
+			spi_xfer_byte(0); // speed
+			spi_xfer_end;
+			#1841;
+
+			pos = 500 - pos;
 		end
-		
 		$finish;
 	end
 
