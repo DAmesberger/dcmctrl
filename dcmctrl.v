@@ -163,7 +163,7 @@ module dcmctrl #(
 		mc_chan_pulse <= mc_chan_pulse | (motor_pulse & ~mc_chan_last_pulse);
 		mc_chan_last_pulse <= motor_pulse;
 
-		mc_timeout <= mc_timeout + 1;
+		mc_timeout <= mc_chan_speed[0] == 0 ? mc_timeout : (mc_timeout + 1);
 		mc_chan_live <= mc_timeout ? (mc_chan_live | mc_chan_pulse) : 0;
 
 		if (reset) begin
@@ -198,7 +198,7 @@ module dcmctrl #(
 					if (mc_flags[mc_channel] != 0 && reg_rdata == 0) begin
 						mc_chan_live[mc_channel] <= 0;
 						mc_timeout <= 0;
-						//motor_reset[mc_channel] <= ~0; //TODO - pulse						
+						//motor_reset[mc_channel] <= ~0; //TODO - pulse
 					end
 					mc_flags[mc_channel] <= reg_rdata;
 					reg_addr <= reg_addr + 1;
@@ -368,7 +368,7 @@ module top  (
 	output SLOT1_IO5, //RESET_CD (1)
 	input  SLOT1_IO6, //FAULT    (1)
 	input  SLOT1_IO7, //OTW      (1)
-	output SLOT1_IO8, //MODE     (1)	
+	output SLOT1_IO8, //MODE     (1)
 	output SLOT1_IO9, //TODO: TEMP FOR TESTING
 
 	output SLOT2_IO0, //PWM_A    (2)
@@ -390,9 +390,9 @@ module top  (
 	output SLOT3_IO5, //RESET_CD (3)
 	input SLOT3_IO6, //FAULT    (3)
 	input  SLOT3_IO7, //OTW      (3)
-	output SLOT3_IO8, //MODE     (3)	
+	output SLOT3_IO8, //MODE     (3)
 	output SLOT3_IO9,
-	
+
 	input  SLOT4_IO0, //HALL 1
 	input  SLOT4_IO1, //HALL 2
 	input  SLOT4_IO2, //HALL 3
@@ -401,7 +401,7 @@ module top  (
 	input  SLOT4_IO5,  //HALL 6
 	input  SLOT4_IO6  //RESET
 	//output SLOT4_IO7,
-	//output SLOT4_IO8,	
+	//output SLOT4_IO8,
 	//output SLOT4_IO9
 );
 
@@ -463,7 +463,7 @@ module top  (
 	assign motor_pulse[2] = SLOT4_IO2;
 	assign motor_pulse[3] = SLOT4_IO3;
 	assign motor_pulse[4] = SLOT4_IO4;
-	assign motor_pulse[5] = SLOT4_IO5;	
+	assign motor_pulse[5] = SLOT4_IO5;
 
 	wire LED = LED1_1;
 	assign LED = LED1_2;

@@ -81,7 +81,7 @@ module testbench;
 
 	integer i;
 
-	reg [15:0] pos = 500;
+	reg [15:0] pos = 2500;
 
 	initial begin
 		$dumpfile("testbench.vcd");
@@ -132,7 +132,7 @@ module testbench;
 			spi_xfer_end;
 			#555;
 
-			repeat (500) begin
+			repeat (1000) begin
 				if (VERBOSE_SPI)
 					$display("T = %d", $time);
 				spi_xfer_begin;
@@ -152,7 +152,22 @@ module testbench;
 			spi_xfer_end;
 			#1841;
 
-			pos = 500 - pos;
+
+			repeat (11) begin
+				if (VERBOSE_SPI)
+					$display("T = %d", $time);
+				spi_xfer_begin;
+				spi_xfer_byte(0 | 0);
+				spi_xfer_byte(0); // flags
+				spi_xfer_byte(0); // current position [23:16]
+				spi_xfer_byte(0); // current position [15:8]
+				spi_xfer_byte(0); // current position [7:0]
+				spi_xfer_end;
+				#991;
+			end
+
+
+			pos = 2500 - pos;
 		end
 		$finish;
 	end
@@ -165,7 +180,7 @@ module testbench;
 			motor_pulse <= motor_left | motor_right;
 			#123;
 			motor_pulse <= 0;
-			#3777;
+			#9999;
 		end
 	end
 endmodule
