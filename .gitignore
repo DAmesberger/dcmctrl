@@ -3,4 +3,5 @@ dsn
 *.bin
 run.bat
 *.rpt
+*.blif
 testbench

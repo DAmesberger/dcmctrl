@@ -1,9 +1,8 @@
 //`define DCMCTRL_DUMMY
 module dcmctrl #(
-	parameter integer N_CHANNELS = 2,
+	parameter integer N_CHANNELS = 6,
 	parameter integer TIMEOUT_EXP2 = 25, //around 1.4 sec timeout @24MHz, Formula=(2^TIMEOUT_EXP2)/24000000
-	parameter integer RESET_EXP = 18, //around 10ms
-	parameter integer RAMP = 500 //higher value -> slower ramp
+	parameter integer RESET_EXP = 18 //around 10ms
 ) (
 	input clk,
 	input reset,
@@ -140,8 +139,6 @@ module dcmctrl #(
 	(* keep *) reg [7:0] mc_flags [0:N_CHANNELS-1];
 
 	(* keep *) reg [7:0] mc_chan_speed [0:N_CHANNELS-1];
-	(* keep *) reg [15:0] ramp_count [0:N_CHANNELS-1];
-
 	(* keep *) reg [N_CHANNELS-1:0] mc_chan_turn_left;
 	(* keep *) reg [N_CHANNELS-1:0] mc_chan_turn_right;
 
@@ -157,7 +154,6 @@ module dcmctrl #(
 
 	// "move left" := mc_position_delta < 0
 	// "move right" := mc_position_delta > 0
-	
 	wire [23:0] mc_position_delta = mc_target_position - mc_current_position;
 
 	wire mc_timeout_check = &mc_timeout[TIMEOUT_EXP2-1 -: 3];
@@ -178,7 +174,7 @@ module dcmctrl #(
 			reg_rstrobe <= 0;
 			mc_chan_live <= 0;
 			mc_timeout <= 0;
-			motor_reset <= ~0;
+			motor_reset <= 1;
 		end else
 		if (!reg_flowctrl) begin
 			reg_wstrobe <= 0;
@@ -202,7 +198,7 @@ module dcmctrl #(
 					if (mc_flags[mc_channel] != 0 && reg_rdata == 0) begin
 						mc_chan_live[mc_channel] <= 0;
 						mc_timeout <= 0;
-						//motor_reset[mc_channel] <= ~0; //TODO - pulse
+						motor_reset[mc_channel] <= 0; //TODO - pulse
 					end
 					mc_flags[mc_channel] <= reg_rdata;
 					reg_addr <= reg_addr + 1;
@@ -228,16 +224,11 @@ module dcmctrl #(
 					mc_state <= 6;
 				end
 				6: begin
-					//mc_chan_speed[mc_channel] <= reg_rdata;
-					if (ramp_count[mc_channel] > RAMP) begin
-						ramp_count[mc_channel] <= 0;
-						if (reg_rdata > mc_chan_speed[mc_channel]) begin
-							mc_chan_speed[mc_channel] <= mc_chan_speed[mc_channel] + 1;
-						end else if (reg_rdata < mc_chan_speed[mc_channel]) begin
-							mc_chan_speed[mc_channel] <= mc_chan_speed[mc_channel] - 1;
-						end
-					end
-
+					//`ifndef SYNTHESIS
+					// if (mc_channel == 0)
+					//	$display("curr pos = %d", mc_current_position);
+					//`endif
+					mc_chan_speed[mc_channel] <= reg_rdata;
 					reg_addr <= reg_addr + 1;
 					reg_rstrobe <= 1;
 					mc_state <= 7;
@@ -262,8 +253,8 @@ module dcmctrl #(
 					if (mc_position_delta == 0) begin
 						mc_chan_live[mc_channel] <= 1;
 					end
-					mc_chan_turn_left[mc_channel] <= !mc_flags[mc_channel] && mc_position_delta[23] && mc_position_delta[22:0] && mc_chan_speed[mc_channel];
-					mc_chan_turn_right[mc_channel] <= !mc_flags[mc_channel] && !mc_position_delta[23] && mc_position_delta[22:0] && mc_chan_speed[mc_channel];
+					mc_chan_turn_left[mc_channel] <= !mc_flags[mc_channel] && mc_position_delta[23];
+					mc_chan_turn_right[mc_channel] <= !mc_flags[mc_channel] && !mc_position_delta[23] && mc_position_delta[22:0];
 					mc_state <= 101;
 				end
 				101: begin
@@ -283,15 +274,6 @@ module dcmctrl #(
 						mc_flags[mc_channel][0] <= 1;
 						mc_write_flags <= 1;
 					end
-
-					mc_state <= 102;
-				end
-				102: begin
-					if (!mc_chan_turn_left[mc_channel] && !mc_chan_turn_right[mc_channel]) begin
-						mc_chan_speed[mc_channel] <= 0;
-					end
-					ramp_count[mc_channel] <= ramp_count[mc_channel] + 1;
-
 					mc_state <= 1000;
 				end
 
@@ -430,23 +412,29 @@ module top  (
 	wire [7:0] motor_reset;
 
 	wire  [7:0] motor_pulse;
-	wire  [7:0] motor_fault;
-	wire  [7:0] motor_otw;
+	wire  [7:0] motor_fault = 0;
+	wire  [7:0] motor_otw = 0;
 
-	assign SLOT1_IO4 = 1;
-	assign SLOT1_IO5 = 1;
+    //TODO - reset functionality needs to be implemented
+	localparam RESET = 1;
+	assign SLOT1_IO4 = RESET;
+	assign SLOT1_IO5 = RESET;
+	assign SLOT2_IO4 = RESET;
+	assign SLOT2_IO5 = RESET;
+	assign SLOT3_IO4 = RESET;
+	assign SLOT3_IO5 = RESET;
 
 	//SLOT 1
-	assign motor_left[0]  = SLOT1_IO0;
-	assign motor_right[0] = SLOT1_IO1;
-	assign motor_left[1]  = SLOT1_IO2;
-	assign motor_right[1] = SLOT1_IO3;
-	assign motor_reset[0] = !SLOT1_IO4;
-	assign motor_reset[1] = !SLOT1_IO5;
-	assign motor_fault[0] = !SLOT1_IO6;
+	assign motor_left[1]  = SLOT1_IO0;
+	assign motor_right[1] = SLOT1_IO1;
+	assign motor_left[0]  = SLOT1_IO2;
+	assign motor_right[0] = SLOT1_IO3;
+	//assign motor_reset[1] = !SLOT1_IO4;
+	//assign motor_reset[0] = !SLOT1_IO5;
 	assign motor_fault[1] = !SLOT1_IO6;
-	assign motor_otw[0]   = !SLOT1_IO7;
+	assign motor_fault[0] = !SLOT1_IO6;
 	assign motor_otw[1]   = !SLOT1_IO7;
+	assign motor_otw[0]   = !SLOT1_IO7;
 	assign SLOT1_IO8      = MODE;
 
 	//SLOT 2
@@ -454,12 +442,12 @@ module top  (
 	assign motor_right[2] = SLOT2_IO1;
 	assign motor_left[3]  = SLOT2_IO2;
 	assign motor_right[3] = SLOT2_IO3;
-	assign motor_reset[2] = !SLOT2_IO4;
-	assign motor_reset[3] = !SLOT2_IO5;
-	//assign motor_fault[2] = !SLOT2_IO6;
-	//assign motor_fault[3] = !SLOT2_IO6;
-	//assign motor_otw[2]   = !SLOT2_IO7;
-	//assign motor_otw[3]   = !SLOT2_IO7;
+	//assign motor_reset[2] = !SLOT2_IO4;
+	//assign motor_reset[3] = !SLOT2_IO5;
+	assign motor_fault[2] = !SLOT2_IO6;
+	assign motor_fault[3] = !SLOT2_IO6;
+	assign motor_otw[2]   = !SLOT2_IO7;
+	assign motor_otw[3]   = !SLOT2_IO7;
 	assign SLOT2_IO8      = MODE;
 
 	//SLOT 3
@@ -467,12 +455,12 @@ module top  (
 	assign motor_right[4] = SLOT3_IO1;
 	assign motor_left[5]  = SLOT3_IO2;
 	assign motor_right[5] = SLOT3_IO3;
-	assign motor_reset[4] = !SLOT3_IO4;
-	assign motor_reset[5] = !SLOT3_IO5;
-	//assign motor_fault[4] = !SLOT3_IO6;
-	//assign motor_fault[5] = !SLOT3_IO6;
-	//assign motor_otw[4]   = !SLOT3_IO7;
-	//assign motor_otw[5]   = !SLOT3_IO7;
+	//assign motor_reset[4] = !SLOT3_IO4;
+	//assign motor_reset[5] = !SLOT3_IO5;
+	assign motor_fault[4] = !SLOT3_IO6;
+	assign motor_fault[5] = !SLOT3_IO6;
+	assign motor_otw[4]   = !SLOT3_IO7;
+	assign motor_otw[5]   = !SLOT3_IO7;
 	assign SLOT3_IO8      = MODE;
 
 	//SLOT 4
@@ -485,7 +473,7 @@ module top  (
 
 	wire LED = LED1_1;
 	assign LED = LED1_2;
-	assign LED = SLOT4_IO0;
+	assign LED = SLOT1_IO4;
 
 //assign LED1_1 = SLOT1_IO4;
 //assign LED1_2 = SLOT1_IO4;
@@ -502,7 +490,7 @@ always @(posedge clk)
    end
 
 wire reset = pup_reset;
-wire SLOT1_IO9 = reset;
+//wire SLOT1_IO9 = reset;
 
 
 

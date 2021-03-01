@@ -1,0 +1,21 @@
+#ifndef MOTORS_H
+#define MOTORS_H
+
+#include "stdint.h"
+
+#define MOTOR_COUNT 6
+
+typedef struct {
+  uint8_t flags;
+  uint32_t position;
+} motor_t;
+
+void dc_reset_2(uint8_t motor_id);
+void dc_set_current_position_2(uint8_t motor_id, uint32_t position);
+uint8_t dc_get_flag_2(uint8_t motor_id);
+void dc_move_2(uint8_t motor_id, uint8_t speed, uint32_t position);
+void dc_set_speed_2(uint8_t motor_id, uint8_t speed);
+void dc_set_target_position_2(uint8_t motor_id, uint32_t position);
+void dc_read_all_2(volatile motor_t *motors);
+void before_loop_custom();
+#endif

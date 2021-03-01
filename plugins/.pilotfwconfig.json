@@ -1,0 +1,49 @@
+{
+    "compiler": "Rust",
+    "modules": [
+        {
+            "slot": 1,
+            "fid": "io16",
+            "fid_nicename": "16 Digital I/Os",
+            "config": {
+                "direction": {
+                    "0-3": "in",
+                    "4-7": "in",
+                    "8-11": "in",
+                    "12-15": "in"
+                }
+            }
+        },
+        {
+            "slot": 2,
+            "fid": "aio20",
+            "fid_nicename": "20 Analog IOs",
+            "config": {}
+        },
+        {
+            "slot": 3,
+            "fid": "fpga",
+            "fid_nicename": "FPGA",
+            "plugin": "dcmctrl"
+        },
+        {
+            "slot": 4,
+            "fid": "io16",
+            "fid_nicename": "16 Digital I/Os",
+            "config": {
+                "direction": {
+                    "0-3": "in",
+                    "4-7": "in",
+                    "8-11": "in",
+                    "12-15": "in"
+                }
+            }
+        }
+    ],
+    "nodes": [
+        {
+            "name": "default",
+            "node": "192.168.101.64"
+        }
+    ]
+}

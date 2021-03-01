@@ -1,0 +1,71 @@
+#include "iec_std_lib.h"
+#include "fpga.h"
+#include <string.h> // memcpy
+#include "motors.h"
+
+void dc_reset_{{plugins.dcmctrl.module.device.index}}(uint8_t motor_id)
+{
+ uint8_t cmd[2] = { (motor_id * 4) | 0x80, 0x0 };
+
+  pilot_fpga_{{plugins.dcmctrl.module.device.index}}_send(cmd, 2);
+}
+
+void dc_set_current_position_{{plugins.dcmctrl.module.device.index}}(uint8_t motor_id, uint32_t position)
+{
+ uint8_t cmd[4] = { 0x1+(motor_id * 4) | 0x80, 
+  (position >> 16) & 0xFF, 
+  (position >> 8) & 0xFF, 
+  position & 0xFF };
+
+  pilot_fpga_{{plugins.dcmctrl.module.device.index}}_send(cmd, 4);
+}
+
+uint8_t dc_get_flag_{{plugins.dcmctrl.module.device.index}}(uint8_t motor_id)
+{
+  uint8_t cmd[2] = { (motor_id * 4), 0x0 };
+  pilot_fpga_{{plugins.dcmctrl.module.device.index}}_send(cmd, 2);
+  return cmd[1];
+}
+
+void dc_move_{{plugins.dcmctrl.module.device.index}}(uint8_t motor_id, uint8_t speed, uint32_t position)
+{
+    uint8_t cmd[5] = { 0x41+(motor_id * 4) | 0x80, 
+      (position >> 16) & 0xFF,
+      (position >> 8) & 0xFF,
+      position & 0xFF };
+
+  pilot_fpga_{{plugins.dcmctrl.module.device.index}}_send(cmd, 5);
+}
+
+void dc_set_speed_{{plugins.dcmctrl.module.device.index}}(uint8_t motor_id, uint8_t speed)
+{
+ uint8_t cmd[2] = { 0x40 + (motor_id * 4) | 0x80, speed };
+
+  pilot_fpga_{{plugins.dcmctrl.module.device.index}}_send(cmd, 2);
+}
+
+void dc_set_target_position_{{plugins.dcmctrl.module.device.index}}(uint8_t motor_id, uint32_t position)
+{
+  uint8_t cmd[4] = { 0x41+(motor_id * 4) | 0x80, 
+  (position >> 16) & 0xFF,
+  (position >> 8) & 0xFF,
+  position & 0xFF };
+
+  pilot_fpga_{{plugins.dcmctrl.module.device.index}}_send(cmd, 4);
+}
+
+#define REVERSE_PTR32(dst, src) *(dst) = (((uint32_t)(src)[0]) << 24) | ((((uint32_t)(src)[1]) << 16) & 0xFF) | ((((uint32_t)(src)[2]) << 8) & 0xFF) | (((uint32_t)(src)[3]) & 0xFF)
+
+void dc_read_all_{{plugins.dcmctrl.module.device.index}}(volatile motor_t *motor)
+{
+  uint8_t cmd[1+(MOTOR_COUNT*4)];
+  memset(cmd, 0, 1+(MOTOR_COUNT*4));
+  pilot_fpga_{{plugins.dcmctrl.module.device.index}}_send(cmd, 1+(MOTOR_COUNT*4));
+
+  uint8_t *data = &cmd[1];
+  for(int i = 0; i < MOTOR_COUNT; i++) {
+    int start = i << 2;
+    motor[i].flags = data[start];
+    motor[i].position = data[start+3] << 16 | data[start+2] << 8 | data[start+1];
+  }
+}
