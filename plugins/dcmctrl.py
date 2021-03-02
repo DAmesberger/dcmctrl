@@ -8,8 +8,8 @@ def default_config():
   return {}
 
 class DCMCtrlDevice():
-  motor_count = 6
   size = 1
+  motorcount = 6
   ctype = 'uint16_t[16]'
   rusttype = 'u8'
   include = ['motors.h'] 
@@ -18,18 +18,14 @@ class DCMCtrlDevice():
   mem_to_dev_source = ''
   mem_doc = { 
     "read": [
-      {
-      }
     ],
     "write": [
-      {
-      }
     ]
   }
 
   decl = {
     'c': { 'name': 'motor_t', 'arr': '[6]' },
-    'rust': { 'name': '[Motor; 6]', 'decl': """#[repr(C, packed)]
+    'rust': { 'name': '[Motor; 6]', 'decl': """#[repr(C)]
 pub struct Motor { 
   pub flags: u8,
   pub position: u32,
@@ -44,7 +40,6 @@ pub struct Motor {
   
   def __init__(self, model, module, compiler, helpers):
     self.size = 1
-    self.motor_count = 6
     self.module = module
     self.helpers = {'gpio': toGPIO, **helpers}
     self.compiler = compiler
@@ -55,7 +50,43 @@ pub struct Motor {
   dc_read_all_{{device.index}}(plc_mem_devices.m{{device.slot}}); 
   """
 
-    for n in range(self.motor_count)
-
+    for i in range(self.motorcount):
+      self.mem_doc['read'].append(
+      {
+        "byte": (i*4),
+        "bit": 0,
+        "length": 1,
+        "name": "OTW M{}".format(i),
+        "desc": "Over-Temperature Error Motor {}".format(i),
+        "signed": False
+      })
+      self.mem_doc['read'].append(
+      {
+        "byte": (i*4),
+        "bit": 1,
+        "length": 1,
+        "name": "FAULT M{}".format(i),
+        "desc": "Fault Motor {}".format(i),
+        "signed": False
+      })
+      self.mem_doc['read'].append(
+      {
+        "byte": (i*4),
+        "bit": 2,
+        "length": 1,
+        "name": "Timeout M{}".format(i),
+        "desc": "Timeout Motor {}".format(i),
+        "signed": False
+      })
+      self.mem_doc['read'].append(
+      {
+        "byte": (i*4)+1,
+        "bit": 0,
+        "length": 24,
+        "name": "Pos M{}".format(i),
+        "desc": "Current Position Motor {}".format(i),
+        "signed": False
+      })
+  
     dev_to_mem_template = self.compiler.compile(dev_to_mem_str)
     self.dev_to_mem_source = dev_to_mem_template(self.module, self.helpers)

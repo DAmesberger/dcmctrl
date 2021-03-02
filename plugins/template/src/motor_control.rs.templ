@@ -1,51 +1,64 @@
-#[no_mangle]
+//This file is auto-implemented {{version}}, do not edit
+
 extern "C" {
-  pub fn dc_reset_{{plugins.dcmctrl.module.device.index}}(motor_id:u8);
-  pub fn dc_set_current_position_{{plugins.dcmctrl.module.device.index}}(motor_id: u8, position: u32);
-  pub fn dc_get_flag_{{plugins.dcmctrl.module.device.index}}(motor_id: u8);
-  pub fn dc_move_{{plugins.dcmctrl.module.device.index}}(motor_id: u8, speed: u8, position: u32);
-  pub fn dc_set_speed_{{plugins.dcmctrl.module.device.index}}(motor_id: u8, speed: u8);
-  pub fn dc_set_target_position_{{plugins.dcmctrl.module.device.index}}(motor_id: u8, position: u32);
+  fn dc_reset_{{plugins.dcmctrl.module.device.index}}(motor_id:u8);
+  fn dc_set_current_position_{{plugins.dcmctrl.module.device.index}}(motor_id: u8, position: u32);
+  fn dc_get_flag_{{plugins.dcmctrl.module.device.index}}(motor_id: u8);
+  fn dc_move_{{plugins.dcmctrl.module.device.index}}(motor_id: u8, speed: u8, position: u32);
+  fn dc_set_speed_{{plugins.dcmctrl.module.device.index}}(motor_id: u8, speed: u8);
+  fn dc_set_target_position_{{plugins.dcmctrl.module.device.index}}(motor_id: u8, position: u32);
 }
 
 pub fn dc_reset(motor_id: u8)
 {
-  unsafe {
-    dc_reset_{{plugins.dcmctrl.module.device.index}}(motor_id);
+  if motor_id < {{plugins.dcmctrl.module.device.spec.motorcount}} {
+    unsafe {
+      dc_reset_{{plugins.dcmctrl.module.device.index}}(motor_id);
+    }
   }
 }
 
 pub fn dc_set_current_position(motor_id: u8, position: u32) 
 {
-  unsafe {
-    dc_set_current_position_{{plugins.dcmctrl.module.device.index}}(motor_id, position);
+  if motor_id < {{plugins.dcmctrl.module.device.spec.motorcount}} {
+    unsafe {
+      dc_set_current_position_{{plugins.dcmctrl.module.device.index}}(motor_id, position);
+    }
   }
 }
 
 pub fn dc_get_flag(motor_id: u8)
 {
-  unsafe {
-    dc_get_flag_{{plugins.dcmctrl.module.device.index}}(motor_id);
+  if motor_id < {{plugins.dcmctrl.module.device.spec.motorcount}} {
+    unsafe {
+      dc_get_flag_{{plugins.dcmctrl.module.device.index}}(motor_id);
+    }
   }
 }
 
 pub fn dc_move(motor_id: u8, speed: u8, position: u32)
 {
-  unsafe {
-    dc_move_{{plugins.dcmctrl.module.device.index}}(motor_id, speed, position);
+  if motor_id < {{plugins.dcmctrl.module.device.spec.motorcount}} {
+    unsafe {
+      dc_move_{{plugins.dcmctrl.module.device.index}}(motor_id, speed, position);
+    }
   }
 }
 
 pub fn dc_set_speed(motor_id: u8, speed: u8)
 {
-  unsafe {
-    dc_set_speed_{{plugins.dcmctrl.module.device.index}}(motor_id, speed);
+  if motor_id < {{plugins.dcmctrl.module.device.spec.motorcount}} {
+    unsafe {
+      dc_set_speed_{{plugins.dcmctrl.module.device.index}}(motor_id, speed);
+    }
   }
 }
 
 pub fn dc_set_target_position(motor_id: u8, position: u32)
 {
-  unsafe {
-    dc_set_target_position_{{plugins.dcmctrl.module.device.index}}(motor_id, position);
+  if motor_id < {{plugins.dcmctrl.module.device.spec.motorcount}} {
+    unsafe {
+      dc_set_target_position_{{plugins.dcmctrl.module.device.index}}(motor_id, position);
+    }
   }
 }

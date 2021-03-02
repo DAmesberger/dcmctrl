@@ -66,6 +66,7 @@ void dc_read_all_{{plugins.dcmctrl.module.device.index}}(volatile motor_t *motor
   for(int i = 0; i < MOTOR_COUNT; i++) {
     int start = i << 2;
     motor[i].flags = data[start];
-    motor[i].position = data[start+3] << 16 | data[start+2] << 8 | data[start+1];
+    //motor[i].position = data[start+3] << 16 | data[start+2] << 8 | data[start+1];
+    motor[i].position = data[start+1] << 16 | data[start+2] << 8 | data[start+3];
   }
 }
