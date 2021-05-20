@@ -269,11 +269,13 @@ module dcmctrl #(
 						mc_flags[mc_channel][1] <= 1;
 						mc_write_flags <= 1;
 					end
-					if (motor_otw[mc_channel] && !mc_flags[mc_channel][0]) begin
-						motor_reset[mc_channel] <= 1;
-						mc_flags[mc_channel][0] <= 1;
-						mc_write_flags <= 1;
-					end
+					//Don't stop motor, the OTW does mean that the temperature is critical, but
+					//if the temp exceeds a limit, a FAULT will be raised
+					//if (motor_otw[mc_channel] && !mc_flags[mc_channel][0]) begin
+					//	motor_reset[mc_channel] <= 1;
+					//	mc_flags[mc_channel][0] <= 1;
+					//	mc_write_flags <= 1;
+					//end
 					mc_state <= 1000;
 				end
 
