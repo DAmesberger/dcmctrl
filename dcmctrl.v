@@ -327,14 +327,19 @@ module dcmctrl #(
 	(* keep *) reg [3:0] pwm_stage2_channel;
 	(* keep *) reg [7:0] pwm_stage2_speed;
 
+	(* keep *) reg [0:N_CHANNELS-1] motor_left_prev ;
+	(* keep *) reg [0:N_CHANNELS-1] motor_right_prev ;
+
 	always @(posedge clk) begin
 		if (reset) begin
 			pwm_stage1_count <= 0;
 			pwm_stage1_channel <= 0;
+			pwm_left_prev <= 0;
+			pwm_right_prev <= 0;
 		end else begin
+			pwm_stage1_count <= pwm_stage1_count + 1;
 			if (pwm_stage1_channel == N_CHANNELS-1) begin
 				pwm_stage1_channel <= 0;
-				pwm_stage1_count <= pwm_stage1_count + 1;
 			end else begin
 				pwm_stage1_channel <= pwm_stage1_channel + 1;
 			end
@@ -345,6 +350,17 @@ module dcmctrl #(
 
 			motor_left[pwm_stage2_channel] <= mc_chan_turn_left[pwm_stage2_channel] && (pwm_stage2_count < pwm_stage2_speed);
 			motor_right[pwm_stage2_channel] <= mc_chan_turn_right[pwm_stage2_channel] && (pwm_stage2_count < pwm_stage2_speed);
+
+	     	if (mc_chan_turn_left[pwm_stage2_channel] && motor_left[pwm_stage2_channel] && !motor_left_prev[pwm_stage2_channel]) begin
+	     		motor_right[pwm_stage2_channel] <= 1;
+	     	end
+
+	     	if (mc_chan_turn_right[pwm_stage2_channel] && motor_right[pwm_stage2_channel] && !motor_right_prev[pwm_stage2_channel]) begin
+	     		motor_left[pwm_stage2_channel] <= 1;
+	     	end
+
+	     	motor_left_prev[pwm_stage2_channel] <= motor_left[pwm_stage2_channel];
+	     	motor_right_prev[pwm_stage2_channel] <= motor_right[pwm_stage2_channel];
 		end
 	end
 `endif
@@ -473,13 +489,11 @@ module top  (
 	assign motor_pulse[5] = SLOT3_IO5;
 
     //LED
-	//localparam LED_STATUS = 1;
-	//wire LED = LED1_1;
-	//assign LED = LED1_2;
-	//assign LED = !LED_STATUS;
+	localparam LED_STATUS = 1;
+	wire LED = LED1_1;
+	assign LED = LED1_2;
+	assign LED = !LED_STATUS;
 
-assign LED1_1 = SLOT3_IO0;
-assign LED1_2 = SLOT3_IO0;
 
 // Powerup Reset Logic
 // generate a reset pulse on initial powerup
