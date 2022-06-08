@@ -1,0 +1,53 @@
+set_io LED1_1   K3
+set_io LED1_2   K4
+set_io clk      A6
+
+set_io INT      C1
+set_io SPI_CS   B1
+set_io SPI_CLK  P12
+set_io SPI_MISO P11
+set_io SPI_MOSI M11
+
+set_io SLOT1_IO0 L8  #IO40
+set_io SLOT1_IO1 M9  #IO41
+set_io SLOT1_IO2 P10 #IO43
+set_io SLOT1_IO3 M12 #IO48
+set_io SLOT1_IO4 P14 #IO49
+set_io SLOT1_IO5 N14 #IO51
+set_io -pullup yes SLOT1_IO6 L14 #IO52
+set_io -pullup yes SLOT1_IO7 K12 #IO53
+set_io SLOT1_IO8 K14 #IO55
+set_io SLOT1_IO9 J12 #IO56
+
+set_io SLOT2_IO0 M3 #IO24
+set_io SLOT2_IO1 P2 #IO26
+set_io SLOT2_IO2 P3 #IO27
+set_io SLOT2_IO3 M4 #IO28
+set_io SLOT2_IO4 P4 #IO30
+set_io SLOT2_IO5 P5 #IO32
+set_io -pullup yes SLOT2_IO6 P7 #IO35
+set_io -pullup yes SLOT2_IO7 P8 #IO36
+set_io SLOT2_IO8 P9 #IO37
+set_io SLOT2_IO9 M8 #IO39
+
+set_io -pullup yes SLOT3_IO0 C9 #IO80
+set_io -pullup yes SLOT3_IO1 C8 #IO82 
+set_io -pullup yes SLOT3_IO2 A7 #IO84
+set_io -pullup yes SLOT3_IO3 C7 #IO86
+set_io -pullup yes SLOT3_IO4 C6 #IO88
+set_io -pullup yes SLOT3_IO5 A5 #IO89
+#set_io SLOT3_IO6 A4 #IO90
+#set_io SLOT3_IO7 C5 #IO92
+#set_io SLOT3_IO8 A2 #IO93
+#set_io SLOT3_IO9 D5 #IO94
+
+set_io SLOT4_IO0 F14 #IO60
+set_io SLOT4_IO1 G14 #IO61 
+set_io SLOT4_IO2 E14 #IO65
+set_io SLOT4_IO3 F11 #IO66
+set_io SLOT4_IO4 E12 #IO67
+set_io SLOT4_IO5 D14 #IO68
+set_io -pullup yes SLOT4_IO6 C14 #IO69
+set_io -pullup yes SLOT4_IO7 E11 #IO70
+set_io SLOT4_IO8 B14 #IO71
+set_io SLOT4_IO9 C12 #IO73

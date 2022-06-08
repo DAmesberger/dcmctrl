@@ -1,34 +1,30 @@
-PROJ = dcmctrl
-PIN_DEF = fpga.pcf
-DEVICE = hx1k
+# configuration
+SHELL = /bin/sh
+FPGA_PKG = cb132
+FPGA_TYPE = hx1k
+PCF = pilotfpga.pcf
 
-all: $(PROJ).rpt $(PROJ).bin
+# included modules
+ADD_SRC = dcmctrl.v
 
-test:
-	iverilog -o testbench -s testbench testbench.v dcmctrl.v
-	vvp -N testbench
+top_dcmctrl: top_dcmctrl.rpt top_dcmctrl.bin
 
-%.blif: %.v
-	yosys -p 'synth_ice40 -top top -blif $@' $<
+%.json: %.v $(ADD_SRC)
+	yosys -ql $(basename $@)-yosys.log -p \
+	    'synth_ice40 -top $(basename $@) -json $@' $< $(ADD_SRC)
 
-%.asc: $(PIN_DEF) %.blif
-	arachne-pnr -d $(subst hx,,$(subst lp,,$(DEVICE))) -o $@ -p $^ -P cb132
-
-%.bin: %.asc
-	icepack $< $@
+%.asc: %.json
+	nextpnr-ice40 --${FPGA_TYPE} --package ${FPGA_PKG} --json $< --pcf ${PCF} --asc $@
 
 %.rpt: %.asc
-	icetime -d $(DEVICE) -mtr $@ $<
+	icetime -d ${FPGA_TYPE} -mtr $@ $<
 
-prog: $(PROJ).bin
-	iCEburn.py  -e -v -w  $<
+%.bin: %.asc
+	icepack $< $(subst top_,,$@)
 
-sudo-prog: $(PROJ).bin
-	@echo 'Executing prog as root!!!'
-	iCEburn.py  -e -v -w  $<
+all: top_dcmctrl
 
 clean:
-	rm -f $(PROJ).blif $(PROJ).asc $(PROJ).bin
-	rm -f testbench testbench.vcd
+	rm -f top*.json top*.asc top*.rpt *.bin top*yosys.log
 
-.PHONY: all test prog sudo-prog clean
+.PHONY: all clean
